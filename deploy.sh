@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DOMAIN="foo.bar"
+export DOMAIN="foo.bar"
 
 # make sure external network is available
 docker network ls | grep public-gateway &> /dev/null

@@ -5,7 +5,7 @@ services:
   webservice:
     image: nginxdemos/hello
     ports:
-      - 8080:80
+      - 7080:80
     deploy:
       labels:
         - traefik.frontend.rule=Host:${DOMAIN}
@@ -18,6 +18,19 @@ services:
 #        - traefik.redirectorservice.frontend.redirect.entryPoint=https
         # Traefik service that listens to HTTPS
         - traefik.webservice.frontend.entryPoints=https
+        # Rate limits
+#        - traefik.frontend.rateLimit.rateSet.period=10s
+#        - traefik.frontend.rateLimit.rateSet.burst=200
+#        - traefik.frontend.rateLimit.rateSet.average=100
+#        - traefik.frontend.rateLimit.extractorfunc=client.ip
+    labels:
+      # Rate limits
+      - traefik.frontend.rateLimit.rateSet.period=10s
+      - traefik.frontend.rateLimit.rateSet.burst=200
+      - traefik.frontend.rateLimit.rateSet.average=100
+      - traefik.frontend.rateLimit.extractorfunc=client.ip
+    networks:
+      - public-gateway
 
   consul-leader:
     image: consul
@@ -46,6 +59,7 @@ services:
     ports:
       - 80:80
       - 443:443
+      - 8080:8080
     deploy:
       labels:
         - traefik.frontend.rule=Host:traefik.${DOMAIN}
@@ -70,7 +84,7 @@ services:
       --entrypoints='Name:https Address::443 TLS'
       --consul
       --consul.endpoint="consul-leader:8500"
-      --logLevel=INFO
+      --logLevel=DEBUG
       --accessLog
       --api
     networks:
