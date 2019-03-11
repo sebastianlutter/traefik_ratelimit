@@ -31,7 +31,14 @@ ab -c1 -n500 -l http://foo.bar/
 ab -c1 -n500 -l http://foo.bar:7080/
 ```
 
-* inspect
+* inspect service labels of **webservice** service
+```bash
+docker service inspect gateway_webservice
+```
+
+* inspect container labels of **webservice** tasks
 ```bash
 docker inspect $(docker ps |grep hello|cut -d" " -f1)
 ```
+
+As far as I understand the documentation this should work, but it does not :(
