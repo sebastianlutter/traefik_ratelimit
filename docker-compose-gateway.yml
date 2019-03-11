@@ -26,18 +26,18 @@ services:
 
         # Rate limits without rateSet name (traefik does start, but
         # not rate limiting)
-        - traefik.frontend.rateLimit.rateSet.period=10s
-        - traefik.frontend.rateLimit.rateSet.burst=200
-        - traefik.frontend.rateLimit.rateSet.average=100
-        - traefik.frontend.rateLimit.extractorfunc=client.ip
+#        - traefik.frontend.rateLimit.rateSet.period=10s
+#        - traefik.frontend.rateLimit.rateSet.burst=200
+#        - traefik.frontend.rateLimit.rateSet.average=100
+#        - traefik.frontend.rateLimit.extractorfunc=client.ip
 
-#    labels:
+    labels:
       # Rate limits as service labels, not as deploy labels. (traefik
       # starts, but no effect)
-#      - traefik.frontend.rateLimit.rateSet.test.period=10s
-#      - traefik.frontend.rateLimit.rateSet.test.burst=200
-#      - traefik.frontend.rateLimit.rateSet.test.average=100
-#      - traefik.frontend.rateLimit.extractorfunc=client.ip
+      - traefik.frontend.rateLimit.rateSet.period=10s
+      - traefik.frontend.rateLimit.rateSet.burst=200
+      - traefik.frontend.rateLimit.rateSet.average=100
+      - traefik.frontend.rateLimit.extractorfunc=client.ip
 
       # Rate limits as service labels with rateSet name, (traefik config error)
 #      - traefik.frontend.rateLimit.rateSet.test.period=10s
