@@ -1,0 +1,89 @@
+version: '3.3'
+
+services:
+
+  webservice:
+    image: nginxdemos/hello
+    ports:
+      - 8080:80
+    deploy:
+      labels:
+        - traefik.frontend.rule=Host:${DOMAIN}
+        - traefik.enable=true
+        - traefik.port=80
+        - traefik.tags=public-gateway
+        - traefik.docker.network=public-gateway
+        # Traefik service that listens to HTTP
+        - traefik.redirectorservice.frontend.entryPoints=http
+#        - traefik.redirectorservice.frontend.redirect.entryPoint=https
+        # Traefik service that listens to HTTPS
+        - traefik.webservice.frontend.entryPoints=https
+
+  consul-leader:
+    image: consul
+    command: agent -server -client=0.0.0.0 -bootstrap -ui
+    volumes:
+      - consul-data-leader:/consul/data
+    environment:
+      - CONSUL_BIND_INTERFACE=eth0
+      - 'CONSUL_LOCAL_CONFIG={"leave_on_terminate": true}'
+    networks:
+      - public-gateway
+
+  consul-replica:
+    image: consul
+    command: agent -server -client=0.0.0.0 -retry-join="consul-leader"
+    volumes:
+      - consul-data-replica:/consul/data
+    environment:
+      - CONSUL_BIND_INTERFACE=eth0
+      - 'CONSUL_LOCAL_CONFIG={"leave_on_terminate": true}'
+    networks:
+      - public-gateway
+
+  traefik:
+    image: traefik:v1.7
+    ports:
+      - 80:80
+      - 443:443
+    deploy:
+      labels:
+        - traefik.frontend.rule=Host:traefik.${DOMAIN}
+        - traefik.enable=true
+        - traefik.port=8080
+        - traefik.tags=public-gateway
+        - traefik.docker.network=public-gateway
+        # Traefik service that listens to HTTP
+        - traefik.redirectorservice.frontend.entryPoints=http
+#        - traefik.redirectorservice.frontend.redirect.entryPoint=https
+        # Traefik service that listens to HTTPS
+        - traefik.webservice.frontend.entryPoints=https
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: >
+      --docker
+      --docker.swarmmode
+      --docker.watch
+      --docker.exposedbydefault=false
+      --constraints=tag==public-gateway
+      --entrypoints='Name:http Address::80'
+      --entrypoints='Name:https Address::443 TLS'
+      --consul
+      --consul.endpoint="consul-leader:8500"
+      --logLevel=INFO
+      --accessLog
+      --api
+    networks:
+      - public-gateway
+    depends_on:
+      - consul-leader
+
+volumes:
+  consul-data-leader:
+  consul-data-replica:
+
+networks:
+  public-gateway:
+    external: true
+    driver_opts:
+      encrypted: ""
