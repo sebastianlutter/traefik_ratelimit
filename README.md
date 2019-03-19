@@ -41,4 +41,9 @@ docker service inspect gateway_webservice
 docker inspect $(docker ps |grep hello|cut -d" " -f1)
 ```
 
-As far as I understand the documentation this should work, but it does not :(
+Discussion about this can be found here:
+* https://github.com/containous/traefik/issues/4576
+
+The right way to use the rateLimit for docker stack services is to use them as
+deploy labels in the affected services and replacing **<name>** by some arbitrary 
+name. You can stack multiple rateLimits for an service by using multiple names.
